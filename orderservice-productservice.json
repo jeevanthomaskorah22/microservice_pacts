@@ -19,12 +19,27 @@
       "response": {
         "status": 200,
         "headers": {
+          "Content-Type": "application/json"
         },
         "body": {
           "id": 1,
           "name": "SamsungGalaxy",
           "price": 30000.0,
-          "stock": 43
+          "stock": 49
+        },
+        "matchingRules": {
+          "$.body.id": {
+            "match": "type"
+          },
+          "$.body.name": {
+            "match": "type"
+          },
+          "$.body.price": {
+            "match": "type"
+          },
+          "$.body.stock": {
+            "match": "type"
+          }
         }
       }
     }

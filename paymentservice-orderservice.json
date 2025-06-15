@@ -28,6 +28,17 @@
           "orderId": 4,
           "status": "Confirmed",
           "message": "Order status updated successfully."
+        },
+        "matchingRules": {
+          "$.body.orderId": {
+            "match": "type"
+          },
+          "$.body.status": {
+            "match": "type"
+          },
+          "$.body.message": {
+            "match": "type"
+          }
         }
       }
     }
