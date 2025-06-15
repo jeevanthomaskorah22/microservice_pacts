@@ -1,0 +1,37 @@
+{
+  "consumer": {
+    "name": "OrderService"
+  },
+  "provider": {
+    "name": "ProductService"
+  },
+  "interactions": [
+    {
+      "description": "a request for product with ID 1",
+      "providerState": "Product with ID 1 exists and has sufficient stock",
+      "request": {
+        "method": "GET",
+        "path": "/products/1",
+        "headers": {
+          "Authorization": "Bearer dummy-token"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": {
+          "id": 1,
+          "name": "SamsungGalaxy",
+          "price": 30000.0,
+          "stock": 43
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

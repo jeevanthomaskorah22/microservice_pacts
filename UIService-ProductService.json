@@ -1,0 +1,114 @@
+{
+  "consumer": {
+    "name": "UIService"
+  },
+  "interactions": [
+    {
+      "description": "a request to GET a product by ID",
+      "providerState": "product with ID '1' exists",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer dummy-token",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.header.Authorization": {
+            "match": "type"
+          }
+        },
+        "method": "GET",
+        "path": "/products/1"
+      },
+      "response": {
+        "body": {
+          "id": 1,
+          "name": "SamsungGalaxy",
+          "price": 30000,
+          "stock": 43
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.body.id": {
+            "match": "type"
+          },
+          "$.body.name": {
+            "match": "type"
+          },
+          "$.body.price": {
+            "match": "type"
+          },
+          "$.body.stock": {
+            "match": "type"
+          }
+        },
+        "status": 200
+      }
+    },
+    {
+      "description": "a request to GET all products",
+      "providerState": "products exist",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer dummy-token",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.header.Authorization": {
+            "match": "type"
+          }
+        },
+        "method": "GET",
+        "path": "/products/"
+      },
+      "response": {
+        "body": [
+          {
+            "id": 1,
+            "name": "SamsungGalaxy",
+            "price": 30000,
+            "stock": 43
+          }
+        ],
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.body": {
+            "match": "type",
+            "min": 1
+          },
+          "$.body[*].id": {
+            "match": "type"
+          },
+          "$.body[*].name": {
+            "match": "type"
+          },
+          "$.body[*].price": {
+            "match": "type"
+          },
+          "$.body[*].stock": {
+            "match": "type"
+          }
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-js": {
+      "version": "15.0.1"
+    },
+    "pactRust": {
+      "ffi": "0.4.22",
+      "models": "1.2.3"
+    },
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  },
+  "provider": {
+    "name": "ProductService"
+  }
+}

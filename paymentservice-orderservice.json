@@ -1,0 +1,40 @@
+{
+  "consumer": {
+    "name": "PaymentService"
+  },
+  "provider": {
+    "name": "OrderService"
+  },
+  "interactions": [
+    {
+      "description": "a request to update order status to Confirmed",
+      "providerState": "Order with ID 4 exists",
+      "request": {
+        "method": "PATCH",
+        "path": "/orders/4",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "Confirmed"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "orderId": 4,
+          "status": "Confirmed",
+          "message": "Order status updated successfully."
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

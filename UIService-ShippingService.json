@@ -1,0 +1,76 @@
+{
+  "consumer": {
+    "name": "UIService"
+  },
+  "interactions": [
+    {
+      "description": "a request to create a shipping entry",
+      "providerState": "an order exists and shipping can be created",
+      "request": {
+        "body": {
+          "address": "123 Main St, City, 123456",
+          "orderId": 1,
+          "userId": 1
+        },
+        "headers": {
+          "Authorization": "Bearer dummy-token",
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.body.address": {
+            "match": "type"
+          },
+          "$.body.orderId": {
+            "match": "type"
+          },
+          "$.body.userId": {
+            "match": "type"
+          },
+          "$.header.Authorization": {
+            "match": "type"
+          }
+        },
+        "method": "POST",
+        "path": "/shipping"
+      },
+      "response": {
+        "body": {
+          "orderId": 1,
+          "status": "Pending",
+          "trackingId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "$.body.orderId": {
+            "match": "type"
+          },
+          "$.body.status": {
+            "match": "type"
+          },
+          "$.body.trackingId": {
+            "match": "regex",
+            "regex": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+          }
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-js": {
+      "version": "15.0.1"
+    },
+    "pactRust": {
+      "ffi": "0.4.22",
+      "models": "1.2.3"
+    },
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  },
+  "provider": {
+    "name": "ShippingService"
+  }
+}
