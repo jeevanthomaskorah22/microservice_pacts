@@ -3,9 +3,8 @@ pipeline {
 
     environment {
         PACTFLOW_BASE_URL = 'https://nitc-0bb42495.pactflow.io'
-        PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')  // Create in Jenkins credentials
-        GIT_COMMIT = "${env.GIT_COMMIT ?: 'HEAD'}"
-        GIT_BRANCH = "${env.BRANCH_NAME ?: 'main'}"
+        PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')
+        PATH = "C:\\Ruby32-x64\\bin;%PATH%" // ✅ Add Ruby executables to PATH
     }
 
     stages {
@@ -15,45 +14,33 @@ pipeline {
             }
         }
 
-        stage('Set Up Python Virtual Environment') {
+        stage('Setup Python Virtual Env') {
             steps {
                 dir('tests') {
-                    echo 'Creating virtual environment...'
                     bat 'py -m venv venv'
-                    echo 'Installing required Python packages...'
-                    bat 'venv\\Scripts\\python.exe -m pip install pact-python pytest requests'
+                    bat 'venv\\Scripts\\python.exe -m pip install --upgrade pip'
+                    bat 'venv\\Scripts\\activate.bat && pip install pytest pact-python requests'
                 }
             }
         }
 
-        stage('Run Consumer Tests (Generate Pacts)') {
+        stage('Run Consumer Pact Tests') {
             steps {
                 dir('tests') {
-                    echo 'Running consumer Pact tests to auto-start mock server and generate pacts...'
-                    bat 'venv\\Scripts\\python.exe -m pytest order_product.py'
+                    bat 'venv\\Scripts\\activate.bat && pytest order_product.py --capture=tee-sys'
                 }
             }
         }
 
-        stage('Install Pact CLI (Node.js based)') {
+        stage('Publish Pact to PactFlow') {
             steps {
                 dir('tests') {
-                    echo 'Installing Pact CLI using npm...'
                     bat 'npm install -g @pact-foundation/pact-cli || exit /b 0'
-                }
-            }
-        }
-
-        stage('Publish Pacts to PactFlow') {
-            steps {
-                dir('tests') {
-                    echo 'Publishing pacts to PactFlow...'
                     bat """
-                    pact publish pacts ^
-                      --consumer-version="${GIT_COMMIT}" ^
-                      --tag="${GIT_BRANCH}" ^
-                      --broker-base-url="${PACTFLOW_BASE_URL}" ^
-                      --broker-token="${PACTFLOW_TOKEN}"
+                        pact publish pacts\\*.json ^
+                          --consumer-version="%BUILD_NUMBER%" ^
+                          --broker-base-url="${PACTFLOW_BASE_URL}" ^
+                          --broker-token="${PACTFLOW_TOKEN}"
                     """
                 }
             }
@@ -62,14 +49,14 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning up workspace...'
+            echo "Cleaning workspace..."
             cleanWs()
         }
-        failure {
-            echo '❌ Pipeline failed! Check logs for more details.'
-        }
         success {
-            echo '✅ Pact consumer contract published successfully!'
+            echo "✅ Pact contract published successfully!"
+        }
+        failure {
+            echo "❌ Pact pipeline failed. Check logs."
         }
     }
 }
