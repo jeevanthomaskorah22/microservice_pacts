@@ -6,7 +6,7 @@ pipeline {
         PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')
         PATH = "C:\\Ruby32-x64\\bin;%PATH%" // Ruby PATH addition is fine
         // Define the absolute path to your Python executable
-        PYTHON_EXE_PATH = "C:\Program Files\Python312\python.exe" // <-- REPLACE THIS WITH YOUR ACTUAL PATH
+        PYTHON_EXE_PATH = "C:\\Program Files\\Python312\\python.exe" // <-- REPLACE THIS WITH YOUR ACTUAL PATH
     }
 
     stages {
