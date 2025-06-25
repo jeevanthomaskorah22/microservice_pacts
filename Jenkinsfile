@@ -2,52 +2,59 @@ pipeline {
     agent any
 
     environment {
-        PACT_BROKER_URL = 'https://nitc-0bb42495.pactflow.io'
-        PACT_CONSUMER = 'OrderService'
-        PACT_DIR = 'tests\\pacts'
+        PACTFLOW_BASE_URL = 'https://nitc-0bb42495.pactflow.io'
+        PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')  // Create in Jenkins credentials
+        GIT_COMMIT = "${env.GIT_COMMIT ?: 'HEAD'}"
+        GIT_BRANCH = "${env.BRANCH_NAME ?: 'main'}"
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 git url: 'https://github.com/jeevanthomaskorah22/microservice_pacts', branch: 'main'
             }
         }
 
-        stage('Setup Python Env') {
+        stage('Set Up Python Virtual Environment') {
             steps {
                 dir('tests') {
+                    echo 'Creating virtual environment...'
                     bat 'py -m venv venv'
-                    bat 'venv\\Scripts\\activate.bat && venv\\Scripts\\python.exe -m pip install --upgrade pip'
-                    bat 'venv\\Scripts\\activate.bat && pip install pytest pact-python requests'
+                    echo 'Installing required Python packages...'
+                    bat 'venv\\Scripts\\python.exe -m pip install pact-python pytest requests'
                 }
             }
         }
 
-        stage('Run Pact Tests') {
+        stage('Run Consumer Tests (Generate Pacts)') {
             steps {
                 dir('tests') {
-                    bat 'venv\\Scripts\\activate.bat && pytest order_product.py'
+                    echo 'Running consumer Pact tests to auto-start mock server and generate pacts...'
+                    bat 'venv\\Scripts\\python.exe -m pytest order_product.py'
                 }
             }
         }
 
-        stage('Publish Pacts') {
+        stage('Install Pact CLI (Node.js based)') {
             steps {
                 dir('tests') {
-                    withCredentials([string(credentialsId: 'PACTFLOW_TOKEN', variable: 'PACT_TOKEN')]) {
-                        bat 'npm install -g @pact-foundation/pact-cli || exit /b 0'
-                        script {
-                            def commitHash = bat(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                            bat """
-                            pact publish pacts\\*.json ^
-                              --consumer-version="${commitHash}" ^
-                              --tag="main" ^
-                              --broker-base-url="${PACT_BROKER_URL}" ^
-                              --broker-token="${PACT_TOKEN}"
-                            """
-                        }
-                    }
+                    echo 'Installing Pact CLI using npm...'
+                    bat 'npm install -g @pact-foundation/pact-cli || exit /b 0'
+                }
+            }
+        }
+
+        stage('Publish Pacts to PactFlow') {
+            steps {
+                dir('tests') {
+                    echo 'Publishing pacts to PactFlow...'
+                    bat """
+                    pact publish pacts ^
+                      --consumer-version="${GIT_COMMIT}" ^
+                      --tag="${GIT_BRANCH}" ^
+                      --broker-base-url="${PACTFLOW_BASE_URL}" ^
+                      --broker-token="${PACTFLOW_TOKEN}"
+                    """
                 }
             }
         }
@@ -55,7 +62,14 @@ pipeline {
 
     post {
         always {
+            echo 'Cleaning up workspace...'
             cleanWs()
+        }
+        failure {
+            echo '❌ Pipeline failed! Check logs for more details.'
+        }
+        success {
+            echo '✅ Pact consumer contract published successfully!'
         }
     }
 }
