@@ -18,7 +18,7 @@ pipeline {
             steps {
                 dir('tests') {
                     bat 'py -m venv venv'
-                    bat 'venv\\Scripts\\activate.bat && pip install --upgrade pip'
+                    bat 'venv\\Scripts\\activate.bat && venv\\Scripts\\python.exe -m pip install --upgrade pip'
                     bat 'venv\\Scripts\\activate.bat && pip install pytest pact-python requests'
                 }
             }
