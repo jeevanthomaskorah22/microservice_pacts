@@ -1,4 +1,3 @@
-// microservice_pacts/tests/package.json
 {
   "name": "consumer-pact-tests",
   "version": "1.0.0",
