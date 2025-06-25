@@ -1,7 +1,7 @@
 // Jenkinsfile (or Jenkinsfile_Consumer) for microservice_pacts repository
 
 pipeline {
-    agent any // Or a specific agent with necessary tools (e.g., agent { label 'my-windows-agent' })
+    agent any
 
     environment {
         PACTFLOW_BASE_URL = 'https://nitc-0bb42495.pactflow.io'
@@ -11,7 +11,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Source') {
+        stage('Initialize Workspace and Navigate') {
             steps {
                 script {
                     echo "Workspace: ${WORKSPACE}"
@@ -26,14 +26,20 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Installing Python dependencies..."
-                    // Use 'bat' for Windows Batch commands
-                    bat 'py -m pip install --upgrade pip' // Use 'py' for Python launcher on Windows
+                    bat 'py -m pip install --upgrade pip'
                     bat 'pip install virtualenv'
                     bat 'py -m venv venv'
                     // Activate virtual environment and install Python pact dependencies
-                    // For Windows, activation script is `venv\Scripts\activate.bat`
                     bat 'venv\\Scripts\\activate.bat && pip install pytest pact-python requests'
                     echo "Python dependencies installed."
+
+                    // --- DIAGNOSTIC STEPS ---
+                    echo "Verifying Python environment..."
+                    bat 'venv\\Scripts\\activate.bat && where python' // Show which python is being used
+                    bat 'venv\\Scripts\\activate.bat && pip freeze'  // List installed packages
+                    bat 'venv\\Scripts\\activate.bat && pytest --version' // Show pytest version and plugins
+                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact' // Check if --pact-dir is mentioned in help
+                    // --- END DIAGNOSTIC STEPS ---
                 }
             }
         }
@@ -52,7 +58,9 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Running Python consumer tests to generate pacts..."
-                    // Activate and run pytest
+                    // Run pytest to generate pact files for Python consumers
+                    // The --pact-dir=./pacts argument tells pact-python to save the generated pact files
+                    // in the 'pacts' subdirectory within the 'tests' folder.
                     bat 'venv\\Scripts\\activate.bat && pytest order_product.py payment-order.py --pact-dir=.\\pacts'
                     echo "Python Pact files generated in ${pwd()}\\pacts"
                 }
@@ -73,13 +81,8 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Publishing Pact files to PactFlow..."
-                    // Install pact-cli
-                    bat 'npm install -g @pact-foundation/pact-cli || exit /b 0' // || exit /b 0 for "ignore errors" in batch
+                    bat 'cmd /c "npm install -g @pact-foundation/pact-cli || exit /b 0"'
 
-                    // Publish all pact files found in the 'pacts' directory.
-                    // Note: Line continuation in batch is different (^) but for long commands,
-                    // it's often easier to put it on one line or use a separate .bat script.
-                    // For readability, I'll keep it on one line here.
                     bat """
                         pact publish .\\pacts\\*.json --consumer-version="${GIT_COMMIT}" --tag="${GIT_BRANCH}" --broker-base-url="${PACTFLOW_BASE_URL}" --broker-token="${PACTFLOW_TOKEN}"
                     """
