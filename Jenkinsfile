@@ -22,27 +22,35 @@ pipeline {
             }
         }
 
-        stage('Install Python Dependencies') {
-            steps {
-                dir('tests') {
-                    echo "Installing Python dependencies..."
-                    bat 'py -m pip install --upgrade pip'
-                    bat 'pip install virtualenv'
-                    bat 'py -m venv venv'
-                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact || exit /b 0'
+stage('Install Python Dependencies') {
+    steps {
+        dir('tests') {
+            echo "Installing Python dependencies..."
+            bat 'py -m pip install --upgrade pip'
+            bat 'pip install virtualenv'
+            bat 'py -m venv venv'
+            
+            // Activate and install dependencies inside venv
+            bat '''
+                call venv\\Scripts\\activate.bat &&
+                pip install --upgrade pip &&
+                pip install pytest pact-python requests
+            '''
 
-                    echo "Python dependencies installed."
+            echo "Python dependencies installed."
 
-                    // --- DIAGNOSTIC STEPS (Good to keep these for now) ---
-                    echo "Verifying Python environment..."
-                    bat 'venv\\Scripts\\activate.bat && where python'
-                    bat 'venv\\Scripts\\activate.bat && pip freeze'
-                    bat 'venv\\Scripts\\activate.bat && pytest --version'
-                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact'
-                    // --- END DIAGNOSTIC STEPS ---
-                }
-            }
+            // Optional diagnostics (after install is confirmed)
+            bat '''
+                call venv\\Scripts\\activate.bat &&
+                where python &&
+                pip freeze &&
+                pytest --version ||
+                exit /b 0
+            '''
         }
+    }
+}
+
 
         stage('Install Node.js Dependencies') {
             steps {
