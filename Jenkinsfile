@@ -27,15 +27,14 @@ stage('Install Python Dependencies') {
         dir('tests') {
             echo "Installing Python dependencies..."
             bat '''
-                py -m pip install --upgrade pip
-                pip install virtualenv
-                py -m venv venv
+                "C:\\Program Files\\Python312\\python.exe" -m pip install --upgrade pip
+                "C:\\Program Files\\Python312\\python.exe" -m venv venv
                 call venv\\Scripts\\activate.bat && (
-                    pip install --upgrade pip &&
-                    pip install pytest pact-python requests &&
+                    "C:\\Program Files\\Python312\\python.exe" -m pip install --upgrade pip &&
+                    "C:\\Program Files\\Python312\\python.exe" -m pip install pytest pact-python requests &&
                     where python &&
-                    pip freeze &&
-                    pytest --version
+                    "C:\\Program Files\\Python312\\python.exe" -m pip freeze &&
+                    "C:\\Program Files\\Python312\\python.exe" -m pytest --version
                 )
             '''
         }
