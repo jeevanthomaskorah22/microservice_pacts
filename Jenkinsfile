@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         PACTFLOW_BASE_URL = 'https://nitc-0bb42495.pactflow.io'
-        PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')
+        PACTFLOW_TOKEN = credentials('PACTFLOW_AUTH_TOKEN')
         GIT_COMMIT = "${env.GIT_COMMIT ?: 'HEAD'}"
         GIT_BRANCH = "${env.BRANCH_NAME ?: 'main'}"
     }
@@ -29,16 +29,15 @@ pipeline {
                     bat 'py -m pip install --upgrade pip'
                     bat 'pip install virtualenv'
                     bat 'py -m venv venv'
-                    // Activate virtual environment and install Python pact dependencies
                     bat 'venv\\Scripts\\activate.bat && pip install pytest pact-python requests'
                     echo "Python dependencies installed."
 
-                    // --- DIAGNOSTIC STEPS ---
+                    // --- DIAGNOSTIC STEPS (Good to keep these for now) ---
                     echo "Verifying Python environment..."
-                    bat 'venv\\Scripts\\activate.bat && where python' // Show which python is being used
-                    bat 'venv\\Scripts\\activate.bat && pip freeze'  // List installed packages
-                    bat 'venv\\Scripts\\activate.bat && pytest --version' // Show pytest version and plugins
-                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact' // Check if --pact-dir is mentioned in help
+                    bat 'venv\\Scripts\\activate.bat && where python'
+                    bat 'venv\\Scripts\\activate.bat && pip freeze'
+                    bat 'venv\\Scripts\\activate.bat && pytest --version'
+                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact'
                     // --- END DIAGNOSTIC STEPS ---
                 }
             }
@@ -58,10 +57,8 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Running Python consumer tests to generate pacts..."
-                    // Run pytest to generate pact files for Python consumers
-                    // The --pact-dir=./pacts argument tells pact-python to save the generated pact files
-                    // in the 'pacts' subdirectory within the 'tests' folder.
-                    bat 'venv\\Scripts\\activate.bat && pytest order_product.py payment-order.py --pact-dir=.\\pacts'
+                    // *** CRITICAL CHANGE HERE: Explicitly run pytest as a module ***
+                    bat 'venv\\Scripts\\python.exe -m pytest order_product.py payment-order.py --pact-dir=.\\pacts'
                     echo "Python Pact files generated in ${pwd()}\\pacts"
                 }
             }
