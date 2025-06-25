@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         PACTFLOW_BASE_URL = 'https://nitc-0bb42495.pactflow.io'
-        PACTFLOW_TOKEN = credentials('PACTFLOW_AUTH_TOKEN')
+        PACTFLOW_TOKEN = credentials('PACTFLOW_TOKEN')
         GIT_COMMIT = "${env.GIT_COMMIT ?: 'HEAD'}"
         GIT_BRANCH = "${env.BRANCH_NAME ?: 'main'}"
     }
