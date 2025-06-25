@@ -1,5 +1,3 @@
-// Jenkinsfile (or Jenkinsfile_Consumer) for microservice_pacts repository
-
 pipeline {
     agent any
 
@@ -28,7 +26,6 @@ pipeline {
                     echo "Installing Python dependencies..."
 
                     // 1. Ensure global pip is up-to-date and virtualenv is installed globally
-                    //    Using 'py' is fine as it uses the default python on PATH.
                     bat 'py -m pip install --upgrade pip'
                     bat 'py -m pip install virtualenv'
 
@@ -42,15 +39,15 @@ pipeline {
 
                     echo "Python dependencies installed."
 
-                    // --- DIAGNOSTIC STEPS (Good to keep these for now) ---
-                    echo "Verifying Python environment..."
-                    // Use 'activate.bat && command' for commands that rely on PATH being set by activate.
-                    // For direct Python commands in venv, use venv\Scripts\python.exe.
-                    bat 'venv\\Scripts\\activate.bat && where python' // Shows python from venv first
-                    bat 'venv\\Scripts\\python.exe -m pip freeze'  // List installed packages in venv
-                    bat 'venv\\Scripts\\python.exe -m pytest --version' // Show pytest version from venv
-                    // Make findstr non-failing, as no match returns exit code 1.
-                    bat 'venv\\Scripts\\activate.bat && pytest --help | findstr pact || exit /b 0'
+                    // --- DIAGNOSTIC STEPS (Crucial for debugging this type of issue) ---
+                    echo "Verifying Python environment and pytest plugins..."
+                    // List all installed packages in the venv to confirm pact-python
+                    bat 'venv\\Scripts\\python.exe -m pip freeze'
+                    // Check pytest version from the venv
+                    bat 'venv\\Scripts\\pytest.exe --version'
+                    // List pytest plugins to confirm pact-python is recognized.
+                    // This command should show 'pact' or 'pact-python' in the output.
+                    bat 'venv\\Scripts\\pytest.exe --help | findstr /I "pact" || echo "Pact pytest plugin not listed by --help"'
                     // --- END DIAGNOSTIC STEPS ---
                 }
             }
@@ -70,8 +67,8 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Running Python consumer tests to generate pacts..."
-                    // Explicitly run pytest as a module using the venv's python.
-                    bat 'venv\\Scripts\\python.exe -m pytest order_product.py payment-order.py --pact-dir=.\\pacts'
+                    // *** CRITICAL CHANGE HERE: Explicitly call pytest.exe from the venv ***
+                    bat 'venv\\Scripts\\pytest.exe order_product.py payment-order.py --pact-dir=.\\pacts'
                     echo "Python Pact files generated in ${pwd()}\\pacts"
                 }
             }
@@ -91,6 +88,10 @@ pipeline {
             steps {
                 dir('tests') {
                     echo "Publishing Pact files to PactFlow..."
+                    // Consider installing pact-cli globally on agent or using npx
+                    // If you have a package.json in 'tests' with pact-cli as a dev dependency,
+                    // you can just 'npm install' and then use 'npm run <script-that-calls-pact-cli>'
+                    // For global install:
                     bat 'cmd /c "npm install -g @pact-foundation/pact-cli || exit /b 0"'
 
                     bat """
