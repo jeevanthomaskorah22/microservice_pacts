@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@pact-foundation/pact": "^11.1.0",
+    "@pact-foundation/pact": "^10.0.0",
     "axios": "^1.6.0",
     "chai": "^4.4.1"
   }
