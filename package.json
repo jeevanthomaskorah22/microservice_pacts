@@ -1,0 +1,16 @@
+{
+  "name": "microservice_pacts",
+  "version": "1.0.0",
+  "description": "Pact consumer contract tests for microservices",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/productConsumer.test.js && node tests/shippingConsumer.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@pact-foundation/pact": "^11.1.0",
+    "axios": "^1.6.0",
+    "chai": "^4.4.1"
+  }
+}
