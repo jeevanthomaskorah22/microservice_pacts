@@ -35,8 +35,8 @@ describe("ShippingService Pact", () => {
             "Content-Type": "application/json",
           },
           body: {
-            orderId: integer(1),
-            userId: integer(1),
+            orderId: uuid("550e8400-e29b-41d4-a716-446655440001"),
+            userId: uuid("550e8400-e29b-41d4-a716-446655440002"),
             address: like("123 Main St, City, 123456"),
           },
         },
@@ -47,7 +47,7 @@ describe("ShippingService Pact", () => {
           },
           body: {
             trackingId: uuid("550e8400-e29b-41d4-a716-446655440000"),
-            orderId: integer(1),                                      
+            orderId: uuid("550e8400-e29b-41d4-a716-446655440001"),                                      
             status: like("Pending")
           },
         },
@@ -58,8 +58,8 @@ describe("ShippingService Pact", () => {
       const res = await axios.post(
         "http://localhost:1234/shipping",
         {
-          orderId: 1,
-          userId: 1,
+          orderId: "550e8400-e29b-41d4-a716-446655440001",
+          userId: "550e8400-e29b-41d4-a716-446655440002",
           address: "123 Main St, City, 123456",
         },
         {
